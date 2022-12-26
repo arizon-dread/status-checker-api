@@ -37,7 +37,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	}
 	return systemstatus, err
 }
-func SaveSystemStatus(system models.Systemstatus) error {
+func SaveSystemStatus(system *models.Systemstatus) error {
 	var err error = nil
 	//persist data
 	db, err := getDbConn()

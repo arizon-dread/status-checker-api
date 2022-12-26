@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/x509"
 	"net/url"
+	"time"
 )
 
 type Systemstatus struct {
@@ -19,4 +20,6 @@ type Systemstatus struct {
 	AlertUrl      url.URL
 	AlertEmail    string
 	Status        string
+	LastOKTime    time.Time
+	LastFailTime  time.Time
 }

@@ -9,17 +9,16 @@ import (
 )
 
 func main() {
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.ReadInconfig()
-
 	readConfig()
 	router := gin.Default()
 	router.GET("/healthz", health)
 	router.GET("/systemstatuses", systemstatuses)
 }
 func readConfig() {
+ viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.ReadInconfig()
+
 	config.Cfg.PgHost = viper.Get("pgHost")
 	config.Cfg.PgPort = viper.Get("pgPort")
 	config.Cfg.PgDatabase = viper.Get("pgDatabase")

@@ -17,10 +17,11 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	system, err := dataLayer.GetSystemStatus(id)
 
 	if err != nil {
-		fmt.Printf("GetAllSystemStatuses returned error: %v", err)
+		fmt.Printf("GetSystemStatus returned error: %v", err)
 		//fail
 	} else {
 		if strings.Contains(system.CallUrl.Scheme, "https") {
+			//cert-check
 			certs := getCertFromUrl(system.CallUrl)
 
 			expirationDate := certs[0].NotAfter

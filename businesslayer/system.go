@@ -21,6 +21,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 		//fail
 	} else {
 		if strings.Contains(system.CallUrl.Scheme, "https") {
+			//cert-check
 			certs := getCertFromUrl(system.CallUrl)
 
 			expirationDate := certs[0].NotAfter

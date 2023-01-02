@@ -12,7 +12,13 @@ import (
 )
 
 func main() {
-
+	readConfig()
+	router := gin.Default()
+	router.GET("/healthz", health)
+	router.GET("/systemstatuses", systemstatuses)
+	router.GET("/systemstatus/:id", systemstatus)
+}
+func readConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.ReadInConfig()
@@ -27,13 +33,7 @@ func main() {
 	// config.Cfg.Postgres.PgDatabase = viper.Get("postgres.pgDatabase")
 	// config.Cfg.Postgres.PgUser = viper.Get("postgres.pgUser")
 	// config.Cfg.Postgres.PgPassword = viper.Get("postgres.pgPassword")
-
-	router := gin.Default()
-	router.GET("/healthz", health)
-	router.GET("/systemstatus", systemstatuses)
-	router.GET("/systemstatus/:id", systemstatus)
 }
-
 func health(c *gin.Context) {
 	c.JSON(http.StatusOK, "Healthy")
 }

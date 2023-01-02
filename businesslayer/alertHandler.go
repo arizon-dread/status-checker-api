@@ -1,4 +1,4 @@
-package businessLayer
+package businesslayer
 
 import (
 	"fmt"
@@ -25,9 +25,9 @@ func sendAlert(system *models.Systemstatus, message string) {
 			fmt.Printf("error while alerting, %v\n", err)
 		}
 
-		if system.AlertEmail != "" {
-			//send email
+	}
+	if system.AlertEmail != "" {
+		//send email
 
-		}
 	}
 }

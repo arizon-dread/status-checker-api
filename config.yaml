@@ -1,5 +1,8 @@
 ---
-pgHost: localhost
-pgPort: 5432
-pgUser: statusUser
-pgDatabase: status
+postgres:
+  pgHost: localhost
+  pgPort: 5432
+  pgUser: statusUser
+  pgDatabase: status
+general:
+  certWarningDays: 20

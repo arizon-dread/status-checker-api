@@ -1,4 +1,4 @@
-package businessLayer
+package businesslayer
 
 import (
 	"fmt"
@@ -7,17 +7,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arizon-dread/status-checker-api/dataLayer"
+	"github.com/arizon-dread/status-checker-api/datalayer"
 	"github.com/arizon-dread/status-checker-api/models"
 )
 
 func GetSystemStatus(id int) (models.Systemstatus, error) {
 	var err error = nil
 	var message string = ""
-	system, err := dataLayer.GetSystemStatus(id)
+	system, err := datalayer.GetSystemStatus(id)
 
 	if err != nil {
-		fmt.Printf("GetAllSystemStatuses returned error: %v", err)
+		fmt.Printf("DataLayer returned error: %v when trying to get system from database\n", err)
 		//fail
 	} else {
 		if strings.Contains(system.CallUrl.Scheme, "https") {
@@ -39,13 +39,13 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 
 			resp, err := http.Post(system.CallUrl.String(), contentType, strings.NewReader(system.CallBody))
 			if err != nil || resp.StatusCode > 399 {
-				message += fmt.Sprintf("Failed posting to endpoint: %v, error was: %v\n", system.AlertUrl.String(), err)
+				message += fmt.Sprintf("Failed posting to endpoint: %v, error was: %v\n", system.CallUrl.String(), err)
 				fmt.Print(message)
 			} else {
 				body, err := ioutil.ReadAll(resp.Body)
 
 				if err != nil {
-					message += fmt.Sprintf("Failed to read response from endpoint: %v, response was: %v\n", system.AlertUrl.String(), err)
+					message += fmt.Sprintf("Failed to read response from endpoint: %v, response was: %v\n", system.CallUrl.String(), err)
 					fmt.Print(message)
 				} else {
 					if strings.Contains(string(body[:]), system.ResponseMatch) {
@@ -59,7 +59,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			//GET
 			resp, err := http.Get(system.CallUrl.String())
 			if err != nil || resp.StatusCode > 399 {
-				message += fmt.Sprintf("Failed sending GET-request to endpoint: %v, error was: %v\n", system.AlertUrl.String(), err)
+				message += fmt.Sprintf("Failed sending GET-request to endpoint: %v, error was: %v\n", system.CallUrl.String(), err)
 				fmt.Print(message)
 			}
 			body, err := ioutil.ReadAll(resp.Body)
@@ -76,7 +76,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			sendAlert(&system, message)
 		}
 	}
-	err = dataLayer.SaveSystemStatus(&system)
+	err = datalayer.SaveSystemStatus(&system)
 	if err != nil {
 		fmt.Printf("Couldn't persist status to db, %v\n", err)
 	}
@@ -85,7 +85,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 
 func GetSystemStatuses() ([]models.Systemstatus, error) {
 	var err error = nil
-	statuses, err := dataLayer.GetAllSystemStatuses()
+	statuses, err := datalayer.GetAllSystemStatuses()
 
 	if err != nil {
 		fmt.Printf("couldn't get systemStatuses from db, %v\n", err)

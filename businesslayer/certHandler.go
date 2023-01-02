@@ -1,4 +1,4 @@
-package businessLayer
+package businesslayer
 
 import (
 	"crypto/tls"

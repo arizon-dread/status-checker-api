@@ -1,4 +1,4 @@
-package dataLayer
+package datalayer
 
 import (
 	"fmt"
@@ -50,7 +50,7 @@ func SaveSystemStatus(system *models.Systemstatus) error {
 
 func getDbConn() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=Europe/Stockholm",
-		config.Cfg.PgHost, config.Cfg.PgUser, config.Cfg.PgPassword, config.Cfg.PgDatabase, config.Cfg.PgPort)
+		config.Cfg.Postgres.PgHost, config.Cfg.Postgres.PgUser, config.Cfg.Postgres.PgPassword, config.Cfg.Postgres.PgDatabase, config.Cfg.Postgres.PgPort)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Printf("Failed to get db connection: %v\n", err)

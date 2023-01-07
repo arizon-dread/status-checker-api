@@ -2,7 +2,8 @@
 postgres:
   pgHost: localhost
   pgPort: 5432
-  pgUser: statusUser
+  pgUser: status
   pgDatabase: status
 general:
   certWarningDays: 20
+herp: derp

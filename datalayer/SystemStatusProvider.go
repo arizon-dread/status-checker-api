@@ -9,6 +9,17 @@ import (
 	"gorm.io/gorm"
 )
 
+func PerformMigrations() error {
+	var err error = nil
+	db, err := getDbConn()
+
+	if err == nil {
+		err = db.AutoMigrate(models.Systemstatus{})
+	}
+
+	return err
+}
+
 func GetAllSystemStatuses() ([]models.Systemstatus, error) {
 	var err error = nil
 
@@ -37,20 +48,23 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	}
 	return systemstatus, err
 }
-func SaveSystemStatus(system *models.Systemstatus) error {
+func SaveSystemStatus(system *models.Systemstatus) (models.Systemstatus, error) {
 	var err error = nil
 	//persist data
 	db, err := getDbConn()
+	var createdSys models.Systemstatus
 	if err == nil {
 		db.Save(system)
+		db.First(&createdSys, system)
 	}
 
-	return err
+	return createdSys, err
 }
 
 func getDbConn() (*gorm.DB, error) {
+	cfg := config.GetInstance()
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=Europe/Stockholm",
-		config.Cfg.Postgres.PgHost, config.Cfg.Postgres.PgUser, config.Cfg.Postgres.PgPassword, config.Cfg.Postgres.PgDatabase, config.Cfg.Postgres.PgPort)
+		cfg.Postgres.PgHost, cfg.Postgres.PgUser, "supers3cret", cfg.Postgres.PgDatabase, cfg.Postgres.PgPort)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Printf("Failed to get db connection: %v\n", err)

@@ -9,7 +9,7 @@ import (
 )
 
 func sendAlert(system *models.Systemstatus, message string) {
-	if system.AlertUrl.String() != "" {
+	if system.AlertUrl != "" {
 		contentType := getContentType(system.AlertBody)
 		body := ""
 		if system.AlertBody == "" {
@@ -20,7 +20,7 @@ func sendAlert(system *models.Systemstatus, message string) {
 			}
 		}
 
-		_, err := http.Post(system.AlertUrl.String(), contentType, strings.NewReader(body))
+		_, err := http.Post(system.AlertUrl, contentType, strings.NewReader(body))
 		if err != nil {
 			fmt.Printf("error while alerting, %v\n", err)
 		}

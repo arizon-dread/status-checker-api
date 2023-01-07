@@ -2,24 +2,27 @@ package models
 
 import (
 	"crypto/x509"
-	"net/url"
 	"time"
 )
 
 type Systemstatus struct {
-	Id            int
-	CallStatus    string
-	CallUrl       url.URL
-	HttpMethod    string
-	Cert          []x509.Certificate
-	CertStatus    string
-	CallBody      string
-	Message       string
-	ResponseMatch string
-	AlertBody     string
-	AlertUrl      url.URL
-	AlertEmail    string
-	Status        string
-	LastOKTime    time.Time
-	LastFailTime  time.Time
+	ID            int       `json:"id"`
+	CallStatus    string    `json:"callStatus"`
+	CallUrl       string    `json:"callUrl"`
+	HttpMethod    string    `json:"httpMethod"`
+	Cert          []Cert    `json:"-"`
+	CertStatus    string    `json:"certStatus"`
+	CallBody      string    `json:"callBody"`
+	Message       string    `json:"message"`
+	ResponseMatch string    `json:"responseMatch"`
+	AlertBody     string    `json:"alertBody"`
+	AlertUrl      string    `json:"alertUrl"`
+	AlertEmail    string    `json:"alertEmail"`
+	Status        string    `json:"status"`
+	LastOKTime    time.Time `json:"lastOkTime"`
+	LastFailTime  time.Time `json:"lastFailTime"`
+}
+type Cert struct {
+	ID          int
+	Certificate x509.Certificate
 }

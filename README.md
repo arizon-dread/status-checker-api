@@ -20,4 +20,4 @@ Alerting can be performed through email or by sending a post request to some end
 ```bash
     docker run -p 5432:5432 -e POSTGRES_USER=status -e POSTGRES_DB=status -e POSTGRES_PASSWORD=muchs3cretw0w postgres:latest
 ```
-_Note:_ This command will not persist the data over container restarts. Please see the official documentation https://hub.docker.com/_/postgres on how to tell postgres where to save data. You also need to mount a volume on that filsystem location, https://docs.docker.com/storage/volumes/
+_Note:_ This command will not persist the data over container restarts. Please see the official documentation https://hub.docker.com/_/postgres on how to tell postgres where to save data. You also need to mount a volume on that filesystem location, https://docs.docker.com/storage/volumes/

@@ -5,11 +5,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/arizon-dread/status-checker-api/config"
 	"github.com/arizon-dread/status-checker-api/datalayer"
 	"github.com/arizon-dread/status-checker-api/models"
 )
@@ -73,19 +71,18 @@ func checkCert(system *models.Systemstatus) string {
 	url, err := url.Parse(system.CallUrl)
 	if err == nil {
 		certs := getCertFromUrl(*url)
-		cfg := config.GetInstance()
 		expirationDate := certs[0].NotAfter
 		currentDate := time.Now()
-		certWarningDays, err := strconv.Atoi(cfg.General.CertWarningDays)
+
 		if err == nil {
-			alertDays := currentDate.AddDate(0, 0, -certWarningDays)
+			alertDays := currentDate.AddDate(0, 0, -system.CertExpirationDays)
 			if expirationDate.After(alertDays) {
-				message += fmt.Sprintf("Certificate will expire in less than %d days, expiration datetime: %v\n", certWarningDays, expirationDate)
+				message += fmt.Sprintf("Certificate will expire in less than %d days, expiration datetime: %v\n", system.CertExpirationDays, expirationDate)
 			} else {
 				system.CertStatus = "OK"
 			}
 		} else {
-			fmt.Printf("CertWarningDays from config could not be converted to int, %v", cfg.General.CertWarningDays)
+			fmt.Printf("CertWarningDays from config could not be converted to int, %v", system.CertExpirationDays)
 		}
 	} else {
 		fmt.Printf("url could not be parsed, %v\n", err)

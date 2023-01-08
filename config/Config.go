@@ -22,7 +22,7 @@ func GetInstance() *Config {
 
 type Config struct {
 	Postgres Postgres
-	General  General
+	//General  General
 }
 
 type Postgres struct {
@@ -33,6 +33,6 @@ type Postgres struct {
 	PgPassword string
 }
 
-type General struct {
-	CertWarningDays string
-}
+// type General struct {
+// 	CertWarningDays string
+// }

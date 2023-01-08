@@ -9,6 +9,7 @@ import (
 )
 
 func sendAlert(system *models.Systemstatus, message string) {
+	system.Status = fmt.Sprintf("ALERT, %v", message)
 	if system.AlertUrl != "" {
 		contentType := getContentType(system.AlertBody)
 		body := ""

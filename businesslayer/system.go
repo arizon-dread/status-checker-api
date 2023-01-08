@@ -25,68 +25,39 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	} else {
 		if strings.Contains(system.CallUrl, "https") {
 			//cert-check
-			url, err := url.Parse(system.CallUrl)
-			if err == nil {
-				certs := getCertFromUrl(*url)
-				cfg := config.GetInstance()
-				expirationDate := certs[0].NotAfter
-				currentDate := time.Now()
-				certWarningDays, err := strconv.Atoi(cfg.General.CertWarningDays)
-				if err == nil {
-					alertDays := currentDate.AddDate(0, 0, -certWarningDays)
-					if expirationDate.After(alertDays) {
-						message += fmt.Sprintf("Certificate will expire in less than 20 days, expiration time: %v\n", expirationDate)
-					} else {
-						system.CertStatus = "OK"
-					}
-				} else {
-					fmt.Printf("CertWarningDays from config could not be converted to int, %v", cfg.General.CertWarningDays)
-				}
-			} else {
-				fmt.Printf("url could not be parsed, %v\n", err)
-			}
+			message += checkCert(&system)
 		}
 		if system.CallBody != "" {
 			//POST
 			contentType := getContentType(system.CallBody)
 
 			resp, err := http.Post(system.CallUrl, contentType, strings.NewReader(system.CallBody))
-			if err != nil || resp.StatusCode > 399 {
-				message += fmt.Sprintf("Failed posting to endpoint: %v, error was: %v\n", system.CallUrl, err)
-				fmt.Print(message)
-			} else {
-				body, err := io.ReadAll(resp.Body)
+			message += handleResponse(&system, resp, err)
 
-				if err != nil {
-					message += fmt.Sprintf("Failed to read response from endpoint: %v, response was: %v\n", system.CallUrl, err)
-					fmt.Print(message)
-				} else {
-					if strings.Contains(string(body[:]), system.ResponseMatch) {
-						system.Status = "OK"
-					} else {
-						message += "Response didn't match expected content"
-					}
-				}
-			}
 		} else {
 			//GET
 			resp, err := http.Get(system.CallUrl)
-			if err != nil || resp.StatusCode > 399 {
-				message += fmt.Sprintf("Failed sending GET-request to endpoint: %v, error was: %v\n", system.CallUrl, err)
-				fmt.Print(message)
-			}
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				message += "Failed reading body of response\n"
-			}
-			if strings.Contains(string(body[:]), system.ResponseMatch) {
-				system.Status = "OK"
-			} else {
-				message += "Response didn't match expected content\n"
-			}
+			message += handleResponse(&system, resp, err)
+			// if err != nil || resp.StatusCode > 399 {
+			// 	message += fmt.Sprintf("Failed sending GET-request to endpoint: %v, error was: %v\n", system.CallUrl, err)
+			// 	fmt.Print(message)
+			// }
+			// body, err := io.ReadAll(resp.Body)
+			// if err != nil {
+			// 	message += "Failed reading body of response\n"
+			// }
+			// if strings.Contains(string(body[:]), system.ResponseMatch) {
+			// 	//success
+			// 	system.CallStatus = "OK"
+			// 	system.LastOKTime = time.Now()
+			// } else {
+			// 	message += "Response didn't match expected content\n"
+			// }
 		}
 		if message != "" {
 			sendAlert(&system, message)
+		} else {
+			system.Status = "OK"
 		}
 	}
 	createdSys, err := datalayer.SaveSystemStatus(&system)
@@ -110,4 +81,52 @@ func SaveSystemStatus(system models.Systemstatus) (models.Systemstatus, error) {
 
 	system, err := datalayer.SaveSystemStatus(&system)
 	return system, err
+}
+
+func checkCert(system *models.Systemstatus) string {
+	var message string = ""
+	url, err := url.Parse(system.CallUrl)
+	if err == nil {
+		certs := getCertFromUrl(*url)
+		cfg := config.GetInstance()
+		expirationDate := certs[0].NotAfter
+		currentDate := time.Now()
+		certWarningDays, err := strconv.Atoi(cfg.General.CertWarningDays)
+		if err == nil {
+			alertDays := currentDate.AddDate(0, 0, -certWarningDays)
+			if expirationDate.After(alertDays) {
+				message += fmt.Sprintf("Certificate will expire in less than %d days, expiration datetime: %v\n", certWarningDays, expirationDate)
+			} else {
+				system.CertStatus = "OK"
+			}
+		} else {
+			fmt.Printf("CertWarningDays from config could not be converted to int, %v", cfg.General.CertWarningDays)
+		}
+	} else {
+		fmt.Printf("url could not be parsed, %v\n", err)
+	}
+	return message
+}
+
+func handleResponse(system *models.Systemstatus, resp *http.Response, err error) string {
+	var message string = ""
+	if err != nil || resp.StatusCode > 399 {
+		message += fmt.Sprintf("Failed posting to endpoint: %v, error was: %v\n", system.CallUrl, err)
+		fmt.Print(message)
+	} else {
+		body, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			message += fmt.Sprintf("Failed to read response from endpoint: %v, response was: %v\n", system.CallUrl, err)
+			fmt.Print(message)
+		} else {
+			if strings.Contains(string(body[:]), system.ResponseMatch) {
+				system.CallStatus = "OK"
+				system.LastOKTime = time.Now()
+			} else {
+				message += "Response didn't match expected content \n"
+			}
+		}
+	}
+	return message
 }

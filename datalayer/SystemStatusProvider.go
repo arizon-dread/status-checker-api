@@ -54,8 +54,8 @@ func SaveSystemStatus(system *models.Systemstatus) (models.Systemstatus, error) 
 	db, err := getDbConn()
 	var createdSys models.Systemstatus
 	if err == nil {
-		db.Save(system)
-		db.First(&createdSys, system)
+		db.Save(&system)
+		db.First(&createdSys, &system)
 	}
 
 	return createdSys, err

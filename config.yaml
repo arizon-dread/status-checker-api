@@ -6,4 +6,3 @@ postgres:
   pgDatabase: status
 general:
   certWarningDays: 20
-herp: derp

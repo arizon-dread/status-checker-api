@@ -38,13 +38,6 @@ func readConfig() {
 		fmt.Printf("error when reading config, %v\n", err)
 		panic("Failed to read config")
 	}
-
-	fmt.Printf("from config: %v\n", cfg.Postgres.PgHost)
-	// config.Cfg.Postgres.PgHost = viper.Get("postgres.pgHost")
-	// config.Cfg.Postgres.PgPort = viper.Get("postgres.pgPort")
-	// config.Cfg.Postgres.PgDatabase = viper.Get("postgres.pgDatabase")
-	// config.Cfg.Postgres.PgUser = viper.Get("postgres.pgUser")
-	// config.Cfg.Postgres.PgPassword = viper.Get("postgres.pgPassword")
 }
 func health(c *gin.Context) {
 	c.JSON(http.StatusOK, "Healthy")

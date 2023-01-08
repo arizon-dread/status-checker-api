@@ -1,7 +1,21 @@
-# Status Checker API - API for monitoring system statuses
+# Status Checker API - REST API for monitoring system statuses
 
+## General information
+* https endpoints will get their certificate expiration time checked against the setting of the system on how many days before cert expiration a warning should be created.
+
+* The current setup uses postgresql as the backend database. It can easily be stood up using docker:
+```bash
+    docker run -p 5432:5432 -e POSTGRES_USER=status -e POSTGRES_DB=status -e POSTGRES_PASSWORD=muchs3cretw0w postgres:latest
+```
+## Endpoints
+### POST /systemstatus
 * Add new systems to the database
-* Get information about a specific system
+### GET /systemstatus
 * Get information about all systems 
-* Delete system from the monitor
+### DELETE /systemstatus/:id
+* Delete system from the monitor _(not yet implemented)_
+### GET /systemstatus/:id
+* Get information about a specific system. This also calls the endpoint of that system and fills out the status fields of the model, returning updated information.
 
+## Alerting
+Alerting can be performed through email or by sending a post request to some endpoint (like a slack webhook integration)

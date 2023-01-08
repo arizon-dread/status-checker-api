@@ -38,21 +38,6 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			//GET
 			resp, err := http.Get(system.CallUrl)
 			message += handleResponse(&system, resp, err)
-			// if err != nil || resp.StatusCode > 399 {
-			// 	message += fmt.Sprintf("Failed sending GET-request to endpoint: %v, error was: %v\n", system.CallUrl, err)
-			// 	fmt.Print(message)
-			// }
-			// body, err := io.ReadAll(resp.Body)
-			// if err != nil {
-			// 	message += "Failed reading body of response\n"
-			// }
-			// if strings.Contains(string(body[:]), system.ResponseMatch) {
-			// 	//success
-			// 	system.CallStatus = "OK"
-			// 	system.LastOKTime = time.Now()
-			// } else {
-			// 	message += "Response didn't match expected content\n"
-			// }
 		}
 		if message != "" {
 			sendAlert(&system, message)

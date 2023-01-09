@@ -19,6 +19,7 @@ type Systemstatus struct {
 	AlertBody          string    `json:"alertBody"`
 	AlertUrl           string    `json:"alertUrl"`
 	AlertEmail         string    `json:"alertEmail"`
+	AlertHasBeenSent   bool      `json:"alertHasBeenSent"`
 	Status             string    `json:"status"`
 	LastOKTime         time.Time `json:"lastOkTime"`
 	LastFailTime       time.Time `json:"lastFailTime"`

@@ -41,6 +41,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			sendAlert(&system, message)
 		} else {
 			system.Status = "OK"
+
 		}
 	}
 	createdSys, err := datalayer.SaveSystemStatus(&system)
@@ -105,6 +106,9 @@ func handleResponse(system *models.Systemstatus, resp *http.Response, err error)
 			if strings.Contains(string(body[:]), system.ResponseMatch) {
 				system.CallStatus = "OK"
 				system.LastOKTime = time.Now()
+				if system.AlertHasBeenSent {
+					sendOKStatus(system)
+				}
 			} else {
 				message += "Response didn't match expected content \n"
 			}

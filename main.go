@@ -35,15 +35,16 @@ func readConfig() {
 
 	viper.SetConfigFile("./config.yaml")
 	viper.SetConfigType("yaml")
-	//viper.SetEnvPrefix("postgres")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.BindEnv("postgres.password")
-	viper.BindEnv("alertsmtp.user")
-	viper.BindEnv("alertsmtp.password")
-	//viper.AutomaticEnv()
+	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
 		breakOnNoConfig(err)
+	}
+	//all keys that are read from config will get overwritten by their env equivalents, as long as they exist in config (empty or not)
+	for _, key := range viper.AllKeys() {
+		val := viper.Get(key)
+		viper.Set(key, val)
 	}
 	err = viper.Unmarshal(&cfg)
 	if err != nil {

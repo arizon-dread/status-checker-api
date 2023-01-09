@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/arizon-dread/status-checker-api/businesslayer"
 	"github.com/arizon-dread/status-checker-api/config"
@@ -29,16 +30,33 @@ func main() {
 	router.Run(":8080")
 }
 func readConfig() {
+
+	cfg := config.GetInstance()
+
 	viper.SetConfigFile("./config.yaml")
 	viper.SetConfigType("yaml")
-	viper.ReadInConfig()
-	cfg := config.GetInstance()
-	err := viper.Unmarshal(&cfg)
+	//viper.SetEnvPrefix("postgres")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.BindEnv("postgres.password")
+	viper.BindEnv("alertsmtp.user")
+	viper.BindEnv("alertsmtp.password")
+	//viper.AutomaticEnv()
+	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("error when reading config, %v\n", err)
-		panic("Failed to read config")
+		breakOnNoConfig(err)
 	}
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		breakOnNoConfig(err)
+	}
+
 }
+
+func breakOnNoConfig(err error) {
+	fmt.Printf("error when reading config, %v\n", err)
+	panic("Failed to read config")
+}
+
 func health(c *gin.Context) {
 	c.JSON(http.StatusOK, "Healthy")
 }

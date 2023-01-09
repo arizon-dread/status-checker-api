@@ -1,7 +1,13 @@
 ---
 postgres:
-  pgHost: localhost
-  pgPort: 5432
-  pgUser: status
-  pgDatabase: status
+  host: localhost
+  port: 5432
+  user: status
+  database: status
+  # password: this should be supplied in via env.
+alertsmtp:
+  server: smtp.gmail.com
+  port: 587
+  #user: this could be supplied via env.
+  #password: this should be supplied via env.
 general:

@@ -63,8 +63,9 @@ func SaveSystemStatus(system *models.Systemstatus) (models.Systemstatus, error) 
 
 func getDbConn() (*gorm.DB, error) {
 	cfg := config.GetInstance()
+	fmt.Printf("pass: %v", cfg.Postgres.Password)
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=Europe/Stockholm",
-		cfg.Postgres.PgHost, cfg.Postgres.PgUser, "supers3cret", cfg.Postgres.PgDatabase, cfg.Postgres.PgPort)
+		cfg.Postgres.Host, cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Port)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Printf("Failed to get db connection: %v\n", err)

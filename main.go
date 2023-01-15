@@ -10,6 +10,7 @@ import (
 	"github.com/arizon-dread/status-checker-api/config"
 	"github.com/arizon-dread/status-checker-api/datalayer"
 	"github.com/arizon-dread/status-checker-api/models"
+	"github.com/arizon-dread/status-checker-api/api"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )

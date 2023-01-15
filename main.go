@@ -27,6 +27,7 @@ func main() {
 	router.GET("/systemstatus", api.Systemstatuses)
 	router.GET("/systemstatus/:id", api.Systemstatus)
 	router.POST("/systemstatus", api.SaveSystemStatus)
+	router.DELETE("/systemstatus/:id", api.DeleteSystemStatus)
 
 	router.Run(":8080")
 }

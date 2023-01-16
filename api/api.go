@@ -1,5 +1,18 @@
 package api
 
+import (
+	"crypto/rsa"
+	"fmt"
+	"strconv"
+
+	"net/http"
+
+	"github.com/arizon-dread/status-checker-api/businesslayer"
+	"github.com/arizon-dread/status-checker-api/models"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/pkcs12"
+)
+
 func Health(c *gin.Context) {
 	c.JSON(http.StatusOK, "Healthy")
 }
@@ -20,9 +33,12 @@ func Systemstatus(c *gin.Context) {
 	if err == nil {
 		status, err := businesslayer.GetSystemStatus(id)
 		if err == nil {
-
 			c.JSON(http.StatusOK, status)
 		} else {
+			fmt.Printf("err: %v", err)
+			if err.Error() == "NotFound" {
+				c.AbortWithStatus(http.StatusNotFound)
+			}
 			c.AbortWithStatus(http.StatusInternalServerError)
 		}
 
@@ -37,7 +53,7 @@ func SaveSystemStatus(c *gin.Context) {
 	err := c.BindJSON(&system)
 
 	if err != nil {
-		,c.AbortWithStatus(http.StatusBadRequest)
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
 	createdSys, err := businesslayer.SaveSystemStatus(system)
@@ -51,7 +67,7 @@ func SaveSystemStatus(c *gin.Context) {
 func DeleteSystemStatus(c *gin.Context) {
 
 	//TODO: Implement Delete.
-	c.AbortWithStatus(http.NotImplemented)
+	c.AbortWithStatus(http.StatusNotImplemented)
 }
 
 func UploadP12CertAndPass(c *gin.Context) {
@@ -63,7 +79,9 @@ func UploadP12CertAndPass(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	clientCert.privkey, clientCert.pubkey, err := pkcs12.Decode
+	privateKey, publicKey, err := pkcs12.Decode(clientCert.P12, clientCert.Password)
+	clientCert.PrivateKey = privateKey.(*rsa.PrivateKey)
+	clientCert.PublicKey = publicKey
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnprocessableEntity)
 	}

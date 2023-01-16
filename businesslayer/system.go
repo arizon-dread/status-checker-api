@@ -1,6 +1,7 @@
 package businesslayer
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,12 +44,14 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			system.Status = "OK"
 
 		}
+		createdSys, err := datalayer.SaveSystemStatus(&system)
+		if err != nil {
+			fmt.Printf("Couldn't persist status to db, %v\n", err)
+		}
+		return createdSys, err
 	}
-	createdSys, err := datalayer.SaveSystemStatus(&system)
-	if err != nil {
-		fmt.Printf("Couldn't persist status to db, %v\n", err)
-	}
-	return createdSys, err
+
+	return system, errors.New("not found")
 }
 
 func GetSystemStatuses() ([]models.Systemstatus, error) {

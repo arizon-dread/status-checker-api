@@ -2,15 +2,11 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"strconv"
 	"strings"
 
-	"github.com/arizon-dread/status-checker-api/businesslayer"
+	"github.com/arizon-dread/status-checker-api/api"
 	"github.com/arizon-dread/status-checker-api/config"
 	"github.com/arizon-dread/status-checker-api/datalayer"
-	"github.com/arizon-dread/status-checker-api/models"
-	"github.com/arizon-dread/status-checker-api/api"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -59,6 +55,3 @@ func breakOnNoConfig(err error) {
 	fmt.Printf("error when reading config, %v\n", err)
 	panic("Failed to read config")
 }
-
-
-

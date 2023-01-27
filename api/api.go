@@ -81,10 +81,19 @@ func UploadP12CertAndPass(c *gin.Context) {
 	}
 
 	privateKey, publicKey, err := pkcs12.Decode(clientCert.P12, clientCert.Password)
-	clientCert.PrivateKey = privateKey.(*rsa.PrivateKey)
-	clientCert.PublicKey = publicKey
 	if err != nil {
-		c.AbortWithStatus(http.StatusUnprocessableEntity)
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
+	} else {
+		clientCert.PrivateKey = privateKey.(*rsa.PrivateKey)
+		clientCert.PublicKey = publicKey
+
+		err := businesslayer.SaveCertificate(clientCert)
+
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+		} else {
+			c.JSON(http.StatusCreated, nil)
+		}
 	}
-	c.JSON(http.StatusCreated, nil)
+
 }

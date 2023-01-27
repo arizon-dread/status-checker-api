@@ -1,6 +1,9 @@
 package businesslayer
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +20,8 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	var err error = nil
 	var message string = ""
 	system, err := datalayer.GetSystemStatus(id)
+	var client *http.Client
+	var transport *http.Transport
 
 	if err != nil {
 		fmt.Printf("DataLayer returned error: %v when trying to get system from database\n", err)
@@ -25,17 +30,27 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 		if strings.Contains(system.CallUrl, "https") {
 			//cert-check
 			message += checkCert(&system)
+			//use clientcert in call
+			if system.ClientCert_ID != nil {
+				tlsConfig, err := getTlsConfigWithClientCert(system)
+				if err == nil {
+					transport.TLSClientConfig = tlsConfig
+					client.Transport = transport
+				} else {
+					fmt.Printf("Failed creating tls client config, %v\n", err)
+				}
+			}
 		}
 		if system.CallBody != "" {
 			//POST
 			contentType := getContentType(system.CallBody)
 
-			resp, err := http.Post(system.CallUrl, contentType, strings.NewReader(system.CallBody))
+			resp, err := client.Post(system.CallUrl, contentType, strings.NewReader(system.CallBody))
 			message += handleResponse(&system, resp, err)
 
 		} else {
 			//GET
-			resp, err := http.Get(system.CallUrl)
+			resp, err := client.Get(system.CallUrl)
 			message += handleResponse(&system, resp, err)
 		}
 		if message != "" {
@@ -52,6 +67,41 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	}
 
 	return system, errors.New("not found")
+}
+
+func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error) {
+	clientCert, err := datalayer.GetClientCert(*system.ClientCert_ID)
+	if err != nil {
+		fmt.Printf("Could not load certificates from db, %v\n", err)
+	}
+	//encode private key as pem structure
+	pemdata := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(clientCert.PrivateKey),
+		},
+	)
+	cert, err := tls.LoadX509KeyPair(string(clientCert.PublicKey.Raw), string(pemdata))
+	if err != nil {
+		fmt.Printf("Could not load x509KeyPair, %v\n", err)
+	}
+
+	url, err := url.Parse(system.CallUrl)
+	if err != nil {
+		fmt.Printf("Could not parse URL to string, %v\n", err)
+	}
+	serverCerts := getCertFromUrl(*url)
+	caCertPool := x509.NewCertPool()
+	for _, sCert := range serverCerts {
+		caCertPool.AddCert(sCert)
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
+	}
+	return tlsConfig, err
+
 }
 
 func GetSystemStatuses() ([]models.Systemstatus, error) {

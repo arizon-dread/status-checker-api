@@ -58,9 +58,10 @@ func SaveSystemStatus(c *gin.Context) {
 
 	createdSys, err := businesslayer.SaveSystemStatus(system)
 
-	if err == nil {
-		c.JSON(http.StatusCreated, createdSys)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
 	}
+	c.JSON(http.StatusCreated, createdSys)
 
 }
 
@@ -85,4 +86,5 @@ func UploadP12CertAndPass(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnprocessableEntity)
 	}
+	c.JSON(http.StatusCreated, nil)
 }

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+
+	"github.com/arizon-dread/status-checker-api/datalayer"
+	"github.com/arizon-dread/status-checker-api/models"
 )
 
 func getCertFromUrl(u url.URL) []*x509.Certificate {
@@ -23,4 +26,9 @@ func getCertFromUrl(u url.URL) []*x509.Certificate {
 
 	return conn.ConnectionState().PeerCertificates
 
+}
+
+func SaveCertificate(c models.ClientCert) error {
+
+	return datalayer.SaveClientCert(&c)
 }

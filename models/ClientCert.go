@@ -6,10 +6,10 @@ import (
 )
 
 type ClientCert struct {
-	ID         int
-	Name       string
-	P12        []byte
-	PublicKey  *x509.Certificate
-	PrivateKey *rsa.PrivateKey //??
-	Password   string
+	ID   *int   `json:"id"`
+	Name string `json:"name"`
+	//P12        []byte            `json:"p12"`
+	PublicKey  *x509.Certificate `json:"-"`
+	PrivateKey *rsa.PrivateKey   `json:"-"` //??
+	Password   string            `json:"password"`
 }

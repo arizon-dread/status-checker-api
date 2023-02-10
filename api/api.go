@@ -3,6 +3,7 @@ package api
 import (
 	"crypto/rsa"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 
 	"net/http"
@@ -71,7 +72,11 @@ func DeleteSystemStatus(c *gin.Context) {
 	c.AbortWithStatus(http.StatusNotImplemented)
 }
 
-func UploadP12CertAndPass(c *gin.Context) {
+/*
+ * upload cert pass and cert-name and get a Location header for where to upload the file with PUT.
+ */
+
+func UploadP12Pass(c *gin.Context) {
 	var clientCert models.ClientCert
 
 	err := c.BindJSON(&clientCert)
@@ -80,14 +85,49 @@ func UploadP12CertAndPass(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	privateKey, publicKey, err := pkcs12.Decode(clientCert.P12, clientCert.Password)
+	id, saveErr := businesslayer.SaveCertificate(clientCert)
+	if saveErr != nil {
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
+	}
+	var url = fmt.Sprintf("%v://%v%v/%v", c.Request.URL.Scheme, c.Request.URL.Host, c.Request.URL.Path, id)
+	c.Header("Location", url)
+	c.JSON(http.StatusAccepted, id)
+}
+
+/*
+ * upload file with put, add header X-FILENAME
+ * the file should be a form file.
+ */
+func UploadCertFile(c *gin.Context) {
+	file, err := c.FormFile(c.GetHeader("X-FILENAME"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	fileContent, err := file.Open()
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	fileBytes, err := ioutil.ReadAll(fileContent)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	clientCert, err := businesslayer.GetCertificate(id)
+	if err != nil {
+		c.AbortWithError(http.StatusUnprocessableEntity, err)
+	}
+
+	privateKey, publicKey, err := pkcs12.Decode(fileBytes, clientCert.Password)
 	if err != nil {
 		c.AbortWithError(http.StatusUnprocessableEntity, err)
 	} else {
 		clientCert.PrivateKey = privateKey.(*rsa.PrivateKey)
 		clientCert.PublicKey = publicKey
 
-		err := businesslayer.SaveCertificate(clientCert)
+		_, err := businesslayer.SaveCertificate(clientCert)
 
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
@@ -95,5 +135,4 @@ func UploadP12CertAndPass(c *gin.Context) {
 			c.JSON(http.StatusCreated, nil)
 		}
 	}
-
 }

@@ -2,7 +2,7 @@ package datalayer
 
 import "github.com/arizon-dread/status-checker-api/models"
 
-func SaveClientCert(c *models.ClientCert) error {
+func SaveClientCert(c *models.ClientCert) (*int, error) {
 	var err error = nil
 	db, err := getDbConn()
 
@@ -11,7 +11,7 @@ func SaveClientCert(c *models.ClientCert) error {
 		err = tx.Error
 	}
 
-	return err
+	return c.ID, err
 }
 func GetClientCert(id int) (models.ClientCert, error) {
 	var err error = nil

@@ -28,7 +28,16 @@ func getCertFromUrl(u url.URL) []*x509.Certificate {
 
 }
 
-func SaveCertificate(c models.ClientCert) error {
+func SaveCertificate(c models.ClientCert) (*int, error) {
 
 	return datalayer.SaveClientCert(&c)
+}
+
+func GetCertificate(id int) (models.ClientCert, error) {
+	clientCert, err := datalayer.GetClientCert(id)
+	if err != nil {
+		fmt.Printf("Could not get clientCert from database, %v", err)
+	}
+
+	return clientCert, err
 }

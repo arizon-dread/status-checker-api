@@ -126,6 +126,7 @@ func UploadCertFile(c *gin.Context) {
 	} else {
 		clientCert.PrivateKey = privateKey.(*rsa.PrivateKey)
 		clientCert.PublicKey = publicKey
+		clientCert.P12 = fileBytes
 
 		_, err := businesslayer.SaveCertificate(clientCert)
 

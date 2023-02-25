@@ -1,6 +1,8 @@
 # Status Checker API - REST API for monitoring system statuses
 
 ## Endpoints
+### GET /healthz
+* Returns 200 healthy if the app is up.
 ### POST /systemstatus
 * Add new systems to the database
 ### GET /systemstatus
@@ -9,7 +11,10 @@
 * Delete system from the monitor _(not yet implemented)_
 ### GET /systemstatus/:id
 * Get information about a specific system. This also calls the endpoint of that system and fills out the status fields of the model, returning updated information.
-
+### POST /clientcert
+* Post a json object with file name and password. A location is returned in the response containing the Id of the cert in the url. Upload the cert with: 
+### PUT /clientcert/:id
+* Put form file to this location, also send the header X-FILENAME containing the filename.
 ## Alerting
 Alerting can be performed through email or by sending a post request to some endpoint (like a slack webhook integration)
 

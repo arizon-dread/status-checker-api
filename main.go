@@ -16,6 +16,7 @@ func main() {
 
 	err := datalayer.PerformMigrations()
 	if err != nil {
+		fmt.Printf("Migrations failed: %v\n", err)
 		panic("migrations failed")
 	}
 	router := gin.Default()
@@ -24,8 +25,7 @@ func main() {
 	router.GET("/systemstatus/:id", api.Systemstatus)
 	router.POST("/systemstatus", api.SaveSystemStatus)
 	router.DELETE("/systemstatus/:id", api.DeleteSystemStatus)
-	router.POST("/clientcert", api.UploadP12Pass)
-	router.PUT("/clientcert/:id", api.UploadCertFile)
+	router.POST("/clientcert", api.UploadP12)
 
 	router.Run(":8080")
 }

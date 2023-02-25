@@ -3,7 +3,6 @@ package businesslayer
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -70,25 +69,19 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 }
 
 func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error) {
-	clientCert, err := datalayer.GetClientCert(*system.ClientCert_ID)
-	if err != nil {
-		fmt.Printf("Could not load certificates from db, %v\n", err)
+	clientCert, getCCErr := datalayer.GetClientCert(*system.ClientCert_ID)
+	if getCCErr != nil {
+		fmt.Printf("Could not load certificates from db, %v\n", getCCErr)
 	}
 	//encode private key as pem structure
-	pemdata := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(clientCert.PrivateKey),
-		},
-	)
-	cert, err := tls.LoadX509KeyPair(string(clientCert.PublicKey.Raw), string(pemdata))
-	if err != nil {
-		fmt.Printf("Could not load x509KeyPair, %v\n", err)
+	cert, ccDecryptErr := decryptClientCert(clientCert)
+	if ccDecryptErr != nil {
+		fmt.Printf("Error decrypting cert, %v", ccDecryptErr)
 	}
 
-	url, err := url.Parse(system.CallUrl)
-	if err != nil {
-		fmt.Printf("Could not parse URL to string, %v\n", err)
+	url, parseErr := url.Parse(system.CallUrl)
+	if parseErr != nil {
+		fmt.Printf("Could not parse URL to string, %v\n", parseErr)
 	}
 	serverCerts := getCertFromUrl(*url)
 	caCertPool := x509.NewCertPool()
@@ -100,6 +93,7 @@ func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error)
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,
 	}
+	err := fmt.Errorf("%w + %w + %w", getCCErr, ccDecryptErr, parseErr)
 	return tlsConfig, err
 
 }

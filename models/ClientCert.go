@@ -1,17 +1,20 @@
 package models
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
+	"mime/multipart"
 )
 
 type ClientCert struct {
-	ID         *int              `json:"id"`
-	Name       string            `json:"name"`
-	P12        []byte            `json:"p12"`
-	PublicKey  *x509.Certificate `json:"-"`
-	PrivateKey *rsa.PrivateKey   `json:"-"` //??
-	Password   string            `json:"password"`
+	ID       int    `json:"id" gorm:"type:int"`
+	Name     string `json:"name"`
+	P12      []byte `json:"-" gorm:"serializer:json"`
+	Password string `json:"password"`
+}
+
+type CertUploadForm struct {
+	Name     string                `form:"name" binding:"required"`
+	P12      *multipart.FileHeader `form:"file" binding:"required"`
+	Password string                `form:"password" binding:"required"`
 }
 
 // type ClientCertFile struct {

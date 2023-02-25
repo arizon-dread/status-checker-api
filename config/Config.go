@@ -23,7 +23,10 @@ func GetInstance() *Config {
 type Config struct {
 	Postgres Postgres
 	AlertSMTP
-	//General  General
+	General General
+}
+type General struct {
+	EncryptionKey string
 }
 
 type Postgres struct {

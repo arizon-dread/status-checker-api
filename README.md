@@ -25,4 +25,4 @@ Alerting can be performed through email or by sending a post request to some end
 ```
 _Note:_ This command will not persist the data over container restarts. Please see the official documentation https://hub.docker.com/_/postgres on how to tell postgres where to save data. You also need to mount a volume on that filesystem location, https://docs.docker.com/storage/volumes/
 
-* An env variable with the encryption key is expected. Please generate a key with OpenSSL or similar, `openssl rand -hex 16`
+* An env variable with the encryption key is expected. Please generate a key with OpenSSL or similar, `openssl rand -hex 16`. The password for the p12 is encrypted at rest and can only be decrypted in the business layer in memory when calling an mTLS endpoint. There is no api endpoint to retrieve the actual cert or password once it has been saved. 

@@ -81,10 +81,13 @@ func UploadP12(c *gin.Context) {
 		fmt.Printf("cert could not be validated")
 		c.AbortWithError(http.StatusUnprocessableEntity, fmt.Errorf("unable to decrypt P12"))
 	}
-	_, err := businesslayer.SaveCertificate(cc)
-	if err != nil {
-		fmt.Printf("error saving certificate, %v", err)
-		c.AbortWithError(http.StatusInternalServerError, err)
+	_, saveErr := businesslayer.SaveCertificate(cc)
+	if saveErr != nil {
+		fmt.Printf("error saving certificate, %v", saveErr)
+		c.AbortWithError(http.StatusInternalServerError, saveErr)
 	}
-	c.JSON(http.StatusCreated, cc.Name)
+	if bindErr == nil && valid && saveErr == nil {
+		c.JSON(http.StatusCreated, cc.Name)
+	}
+
 }

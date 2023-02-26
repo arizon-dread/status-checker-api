@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -39,12 +40,12 @@ func SaveCertificate(cf models.CertUploadForm) (int, error) {
 
 	c, convertErr := formToModel(cf)
 	if convertErr != nil {
-		fmt.Printf("Erro converting form data to certmodel, %v\n", convertErr)
+		fmt.Printf("error converting form data to certmodel, %v\n", convertErr)
 		return 0, convertErr
 	}
 	encPass, err := encryptPassword(c.Password)
 	if err != nil {
-		fmt.Printf("Error encrypting password, %v\n", err)
+		fmt.Printf("error encrypting password, %v\n", err)
 		return 0, err
 	}
 	c.Password = encPass
@@ -52,7 +53,7 @@ func SaveCertificate(cf models.CertUploadForm) (int, error) {
 	return datalayer.SaveClientCert(&c)
 }
 
-func GetCertificate(id int) (models.ClientCert, error) {
+func getClientCert(id int) (models.ClientCert, error) {
 	clientCert, dlErr := datalayer.GetClientCert(id)
 	if dlErr != nil {
 		fmt.Printf("Could not get clientCert from database, %v", dlErr)
@@ -92,20 +93,24 @@ func formToModel(form models.CertUploadForm) (models.ClientCert, error) {
 	return cc, err
 }
 func encryptPassword(clearTxt string) (string, error) {
-
+	var err error = nil
 	gcmInstance, err := getGcmInstance()
 	//Create a nonce which must be unique.
 	nonce := make([]byte, gcmInstance.NonceSize())
 	// read the byte length into the nonce
 	_, _ = io.ReadFull(rand.Reader, nonce)
-	result := string(gcmInstance.Seal(nonce, nonce, []byte(clearTxt), nil))
+	cryptoResult := string(gcmInstance.Seal(nonce, nonce, []byte(clearTxt), nil))
+	result := base64.RawStdEncoding.EncodeToString([]byte(cryptoResult))
 
 	return result, err
 
 }
 
 func decryptPassword(encPwd string) (string, error) {
-	cipher := []byte(encPwd)
+	cipher, b64Err := base64.StdEncoding.DecodeString(encPwd)
+	if b64Err != nil {
+		fmt.Printf("error decoding base64 string")
+	}
 	gcmInstance, gcmErr := getGcmInstance()
 	if gcmErr != nil {
 		fmt.Printf("error getting gcmInstance, %v\n", gcmErr)
@@ -118,12 +123,17 @@ func decryptPassword(encPwd string) (string, error) {
 	if decryptErr != nil {
 		fmt.Printf("Could not decrypt password, %v", decryptErr)
 	}
-	err := fmt.Errorf("%w + %w", gcmErr, decryptErr)
+	var err error
+	if gcmErr != nil || decryptErr != nil || b64Err != nil {
+		err = fmt.Errorf("%w + %w + %w", gcmErr, decryptErr, b64Err)
+	}
+
 	return string(clearPwd), err
 
 }
 func getGcmInstance() (cipher.AEAD, error) {
 	cfg := config.GetInstance()
+	var err error = nil
 	// Create aesBlock with encryption key
 	aesBlock, aesErr := aes.NewCipher([]byte(cfg.General.EncryptionKey))
 
@@ -135,7 +145,10 @@ func getGcmInstance() (cipher.AEAD, error) {
 	if gcmErr != nil {
 		fmt.Printf("Error creating GCMInstance, %v\n", gcmErr)
 	}
-	err := fmt.Errorf("%w + %w", aesErr, gcmErr)
+	if aesErr != nil || gcmErr != nil {
+		err = fmt.Errorf("%w + %w", aesErr, gcmErr)
+	}
+
 	return gcmInstance, err
 }
 
@@ -146,18 +159,17 @@ func decryptClientCert(cc models.ClientCert) (tls.Certificate, error) {
 		fmt.Printf("Could not unpack P12, %v\n", err)
 		return tls.Certificate{}, err
 	}
-	var pubKey string = ""
-	var privKey string = ""
+	var pubKey *pem.Block
+	var privKey *pem.Block
 	for _, b := range blocks {
-		if b.Type == "" {
-			pubKey = string(b.Bytes)
+		if b.Type == "CERTIFICATE" {
+			pubKey = b
 		}
-		if b.Type == "RSA PRIVATE KEY" {
-			privKey = string(pem.EncodeToMemory(b))
+		if b.Type == "PRIVATE KEY" {
+			privKey = b
 		}
 	}
-
-	cert, err := tls.LoadX509KeyPair(pubKey, privKey)
+	cert, err := tls.X509KeyPair(pem.EncodeToMemory(pubKey), pem.EncodeToMemory(privKey))
 	if err != nil {
 		fmt.Printf("Could not load x509KeyPair, %v\n", err)
 	}

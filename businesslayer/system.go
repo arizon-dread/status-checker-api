@@ -69,7 +69,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 }
 
 func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error) {
-	clientCert, getCCErr := datalayer.GetClientCert(*system.ClientCert_ID)
+	clientCert, getCCErr := getClientCert(*system.ClientCert_ID)
 	if getCCErr != nil {
 		fmt.Printf("Could not load certificates from db, %v\n", getCCErr)
 	}

@@ -11,3 +11,4 @@ alertsmtp:
   user: #this could be supplied via env.
   password: #this should be supplied via env.
 general:
+  encryptionKey: #this should be supplied via env.

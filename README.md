@@ -11,10 +11,8 @@
 * Delete system from the monitor _(not yet implemented)_
 ### GET /systemstatus/:id
 * Get information about a specific system. This also calls the endpoint of that system and fills out the status fields of the model, returning updated information.
-### POST /clientcert
-* Post a json object with file name and password. A location is returned in the response containing the Id of the cert in the url. Upload the cert with: 
-### PUT /clientcert/:id
-* Put form file to this location, also send the header X-FILENAME containing the filename.
+### Form POST /clientcert
+* Post a form with FormFile, Form `name` and Form `password`. 
 ## Alerting
 Alerting can be performed through email or by sending a post request to some endpoint (like a slack webhook integration)
 
@@ -26,3 +24,5 @@ Alerting can be performed through email or by sending a post request to some end
     docker run -p 5432:5432 -e POSTGRES_USER=status -e POSTGRES_DB=status -e POSTGRES_PASSWORD=muchs3cretw0w postgres:latest
 ```
 _Note:_ This command will not persist the data over container restarts. Please see the official documentation https://hub.docker.com/_/postgres on how to tell postgres where to save data. You also need to mount a volume on that filesystem location, https://docs.docker.com/storage/volumes/
+
+* An env variable with the encryption key is expected. Please generate a key with OpenSSL or similar, `openssl rand -hex 16`

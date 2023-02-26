@@ -71,10 +71,20 @@ func DeleteSystemStatus(c *gin.Context) {
 
 func UploadP12(c *gin.Context) {
 	var cc models.CertUploadForm
-	err := c.ShouldBind(&cc)
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+	bindErr := c.ShouldBind(&cc)
+	if bindErr != nil {
+		fmt.Printf("could not bind input form to form model")
+		c.AbortWithError(http.StatusBadRequest, bindErr)
 	}
-	businesslayer.SaveCertificate(cc)
-
+	valid := businesslayer.VerifyCertificate(cc)
+	if !valid {
+		fmt.Printf("cert could not be validated")
+		c.AbortWithError(http.StatusUnprocessableEntity, fmt.Errorf("unable to decrypt P12"))
+	}
+	_, err := businesslayer.SaveCertificate(cc)
+	if err != nil {
+		fmt.Printf("error saving certificate, %v", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	c.JSON(http.StatusCreated, cc.Name)
 }

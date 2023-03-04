@@ -53,6 +53,44 @@ func SaveCertificate(cf models.CertUploadForm) (int, error) {
 	return datalayer.SaveClientCert(&c)
 }
 
+func GetCertList() (map[int]string, error) {
+	crts, err := datalayer.GetCertList()
+	m := make(map[int]string)
+	if err != nil {
+		fmt.Printf("Could not get certlist from database, %v", err)
+		return m, err
+	}
+	for _, c := range crts {
+		m[c.ID] = c.Name
+	}
+
+	return m, err
+
+}
+func VerifyCertificate(cert models.CertUploadForm) bool {
+	x, err := datalayer.CertExists(cert.Name)
+	if err == nil {
+		if x {
+			return false
+		}
+	}
+	cc, err := formToModel(cert)
+	if err != nil {
+		return false
+	}
+	_, err = decryptClientCert(cc)
+	return err == nil
+}
+
+func DeleteClientCert(id int) error {
+	err := datalayer.DeleteClientCert(id)
+
+	if err != nil {
+		fmt.Printf("error deleting cert, %v\n", err)
+	}
+	return err
+}
+
 func getClientCert(id int) (models.ClientCert, error) {
 	clientCert, dlErr := datalayer.GetClientCert(id)
 	if dlErr != nil {
@@ -65,14 +103,6 @@ func getClientCert(id int) (models.ClientCert, error) {
 	err := fmt.Errorf("%w + %w", dlErr, decryptErr)
 	clientCert.Password = pw
 	return clientCert, err
-}
-func VerifyCertificate(cert models.CertUploadForm) bool {
-	cc, err := formToModel(cert)
-	if err != nil {
-		return false
-	}
-	_, err = decryptClientCert(cc)
-	return err == nil
 }
 
 func formToModel(form models.CertUploadForm) (models.ClientCert, error) {

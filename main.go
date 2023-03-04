@@ -26,6 +26,8 @@ func main() {
 	router.POST("/systemstatus", api.SaveSystemStatus)
 	router.DELETE("/systemstatus/:id", api.DeleteSystemStatus)
 	router.POST("/clientcert", api.UploadP12)
+	router.GET("/clientcerts", api.GetCertList)
+	router.DELETE("/clientcert/:id", api.DeleteClientCert)
 
 	router.Run(":8080")
 }

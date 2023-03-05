@@ -106,7 +106,7 @@ func UploadP12(c *gin.Context) {
 
 func DeleteClientCert(c *gin.Context) {
 	var id int = 0
-	bindErr := c.ShouldBind(&id)
+	id, bindErr := strconv.Atoi(c.Param("id"))
 	if bindErr == nil {
 		err := businesslayer.DeleteClientCert(id)
 		if err == nil {

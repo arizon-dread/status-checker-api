@@ -8,11 +8,15 @@
 ### GET /systemstatus
 * Get information about all systems 
 ### DELETE /systemstatus/:id
-* Delete system from the monitor _(not yet implemented)_
+* Delete system from the monitor 
 ### GET /systemstatus/:id
 * Get information about a specific system. This also calls the endpoint of that system and fills out the status fields of the model, returning updated information.
 ### Form POST /clientcert
 * Post a form with FormFile, Form `name` and Form `password`. 
+### GET /clientcerts
+* Get a list of Cert id and name to fill up dropdowns when selecting clientcert for a system
+### DELETE /clientcert/:id
+* Delete a clientcertificate from the database. No control is made if it is used.
 ## Alerting
 Alerting can be performed through email or by sending a post request to some endpoint (like a slack webhook integration)
 

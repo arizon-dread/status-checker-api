@@ -46,6 +46,10 @@ func sendStatus(system *models.Systemstatus, body string) error {
 	if system.AlertEmail != "" {
 		err = sendEmail(system, body)
 	}
+	if err == nil {
+		system.AlertHasBeenSent = true
+		datalayer.UpdateSystem(system)
+	}
 
 	return err
 }

@@ -63,10 +63,23 @@ func SaveSystemStatus(c *gin.Context) {
 	}
 }
 
-func DeleteSystemStatus(c *gin.Context) {
-
-	//TODO: Implement Delete.
-	c.AbortWithStatus(http.StatusNotImplemented)
+func DeleteSystem(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err == nil {
+		deleted, err := businesslayer.DeleteSystem(id)
+		if err == nil {
+			if deleted {
+				c.JSON(http.StatusOK, "")
+			} else {
+				c.JSON(http.StatusNotFound, "result was 0 rows affected.")
+			}
+		} else {
+			fmt.Printf("error deleting system, %v\n", err)
+			c.AbortWithError(http.StatusInternalServerError, err)
+		}
+	} else {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
 }
 
 func GetCertList(c *gin.Context) {

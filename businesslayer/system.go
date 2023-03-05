@@ -97,6 +97,15 @@ func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error)
 	return tlsConfig, err
 
 }
+func DeleteSystem(id int) (bool, error) {
+	rowsAffected, err := datalayer.DeleteSystem(id)
+	if rowsAffected > 0 && err == nil {
+		return true, err
+	} else {
+		return false, err
+	}
+
+}
 
 func GetSystemStatuses() ([]models.Systemstatus, error) {
 	var err error = nil

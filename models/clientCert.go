@@ -16,7 +16,3 @@ type CertUploadForm struct {
 	P12      *multipart.FileHeader `form:"file" binding:"required"`
 	Password string                `form:"password" binding:"required"`
 }
-
-// type ClientCertFile struct {
-// 	P12 *multipart.FileHeader `form:"file"`
-// }

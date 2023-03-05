@@ -1,7 +1,6 @@
 package models
 
 import (
-	"crypto/x509"
 	"time"
 )
 
@@ -24,10 +23,4 @@ type Systemstatus struct {
 	LastOKTime         time.Time `json:"lastOkTime"`
 	LastFailTime       time.Time `json:"lastFailTime"`
 	ClientCert_ID      *int      `json:"clientCertId"`
-}
-
-type Cert struct {
-	ID          int
-	Name        string
-	Certificate []x509.Certificate
 }

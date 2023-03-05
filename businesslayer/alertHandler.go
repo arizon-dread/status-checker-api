@@ -3,8 +3,10 @@ package businesslayer
 import (
 	"fmt"
 	"net/http"
+	"net/smtp"
 	"strings"
 
+	"github.com/arizon-dread/status-checker-api/config"
 	"github.com/arizon-dread/status-checker-api/datalayer"
 	"github.com/arizon-dread/status-checker-api/models"
 )
@@ -42,8 +44,23 @@ func sendStatus(system *models.Systemstatus, body string) error {
 	}
 
 	if system.AlertEmail != "" {
-		//send email
+		err = sendEmail(system, body)
 	}
 
+	return err
+}
+
+func sendEmail(system *models.Systemstatus, body string) error {
+	conf := config.GetInstance()
+
+	auth := smtp.PlainAuth("", conf.AlertSMTP.User, conf.AlertSMTP.Password, conf.AlertSMTP.Server)
+	recipients := strings.Split(system.AlertEmail, ";")
+
+	err := smtp.SendMail(fmt.Sprintf("%v:%d", conf.AlertSMTP.Server, conf.AlertSMTP.Port), auth,
+		fmt.Sprintf("%v@%v", conf.AlertSMTP.User, conf.AlertSMTP.Server), recipients,
+		[]byte(system.AlertBody))
+	if err != nil {
+		fmt.Printf("error sending email, %v\n", err)
+	}
 	return err
 }

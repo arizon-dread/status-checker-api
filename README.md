@@ -16,7 +16,7 @@
 ### GET /clientcerts
 * Get a list of Cert id and name to fill up dropdowns when selecting clientcert for a system
 ### DELETE /clientcert/:id
-* Delete a clientcertificate from the database. No control is made if it is used.
+* Delete a clientcertificate from the database. Will give 500 if there's a system that uses the cert.
 ## Alerting
 Alerting can be performed through email or by sending a post request to some endpoint (like a slack webhook integration)
 

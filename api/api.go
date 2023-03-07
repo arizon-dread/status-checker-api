@@ -124,6 +124,9 @@ func DeleteClientCert(c *gin.Context) {
 		err := businesslayer.DeleteClientCert(id)
 		if err == nil {
 			c.JSON(http.StatusOK, id)
+		} else {
+
+			c.AbortWithError(http.StatusInternalServerError, err)
 		}
 	}
 }

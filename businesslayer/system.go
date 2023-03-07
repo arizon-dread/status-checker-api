@@ -30,7 +30,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			//cert-check
 			message += checkCert(&system)
 			//use clientcert in call
-			if system.ClientCert_ID != nil {
+			if system.ClientCertID != nil {
 				tlsConfig, err := getTlsConfigWithClientCert(system)
 				if err == nil {
 					transport.TLSClientConfig = tlsConfig
@@ -69,7 +69,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 }
 
 func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error) {
-	clientCert, getCCErr := getClientCert(*system.ClientCert_ID)
+	clientCert, getCCErr := getClientCert(*system.ClientCertID)
 	if getCCErr != nil {
 		fmt.Printf("Could not load certificates from db, %v\n", getCCErr)
 	}

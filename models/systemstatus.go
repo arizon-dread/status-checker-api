@@ -5,7 +5,7 @@ import (
 )
 
 type Systemstatus struct {
-	ID                 int       `json:"id"`
+	ID                 int       `json:"id" gorm:"primaryKey;autoIncrement:true`
 	Name               string    `json:"name"`
 	CallStatus         string    `json:"callStatus"`
 	CallUrl            string    `json:"callUrl"`
@@ -22,5 +22,5 @@ type Systemstatus struct {
 	Status             string    `json:"status"`
 	LastOKTime         time.Time `json:"lastOkTime"`
 	LastFailTime       time.Time `json:"lastFailTime"`
-	ClientCert_ID      *int      `json:"clientCertId"`
+	ClientCertID       *int      `json:"clientCertId" gorm:"foreignKey:ClientCertID"`
 }

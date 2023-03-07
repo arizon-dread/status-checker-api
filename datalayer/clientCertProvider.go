@@ -1,6 +1,8 @@
 package datalayer
 
 import (
+	"fmt"
+
 	"github.com/arizon-dread/status-checker-api/models"
 )
 
@@ -58,12 +60,21 @@ func GetCertList() ([]models.ClientCert, error) {
 
 func DeleteClientCert(id int) error {
 	var err error = nil
+	var ss models.Systemstatus
+	var noSS int64
 	db, err := getDbConn()
 	if err == nil {
-		tx := db.Delete(&models.ClientCert{}, id)
+		tx := db.Find(&ss, "client_cert_id = ?", id).Count(&noSS)
+		var i int = 0
+		if noSS == int64(i) {
+			tx = db.Delete(&models.ClientCert{}, id)
+		} else {
+			err = fmt.Errorf("could not delete cert since it has relations in systemstatus objects")
+		}
 		if tx.Error != nil {
 			err = tx.Error
 		}
+
 	}
 	return err
 }

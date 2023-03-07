@@ -5,7 +5,7 @@ import (
 )
 
 type Systemstatus struct {
-	ID                 int       `json:"id" gorm:"primaryKey;autoIncrement:true`
+	ID                 int       `json:"id" gorm:"primaryKey;autoIncrement:true"`
 	Name               string    `json:"name"`
 	CallStatus         string    `json:"callStatus"`
 	CallUrl            string    `json:"callUrl"`

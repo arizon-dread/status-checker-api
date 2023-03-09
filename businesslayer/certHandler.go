@@ -69,8 +69,8 @@ func GetCertList() (map[int]string, error) {
 }
 func VerifyCertificate(cert models.CertUploadForm) bool {
 	idx := cert.ID != nil
-	cx, err := datalayer.CertExists(cert.Name)
-	//if id is sent, we want to update only if a cert with that id exists.
+	cx, err := datalayer.CertExists(cert.Name, cert.ID)
+	//if id is sent in the form, we want to update the cert, otherwise verify == false.
 	if err == nil {
 		if cx && !idx {
 			return false
@@ -125,6 +125,9 @@ func formToModel(form models.CertUploadForm) (models.ClientCert, error) {
 		return models.ClientCert{}, err
 	}
 	cc.P12 = p12Container
+	if form.ID != nil {
+		cc.ID = *form.ID
+	}
 	return cc, err
 }
 func encryptPassword(clearTxt string) (string, error) {

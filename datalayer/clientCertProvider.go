@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/arizon-dread/status-checker-api/models"
+	"gorm.io/gorm"
 )
 
 func SaveClientCert(c *models.ClientCert) (int, error) {
@@ -31,16 +32,25 @@ func GetClientCert(id int) (models.ClientCert, error) {
 	}
 	return cert, err
 }
-func CertExists(name string) (bool, error) {
+func CertExists(name string, id *int) (bool, error) {
 	var err error = nil
 	var c []models.ClientCert
 	db, err := getDbConn()
 	if err == nil {
-		tx := db.Find(&c, "name = ?", name)
+		var tx *gorm.DB
+		if id == nil {
+			if name == "" {
+				return false, fmt.Errorf("neither id or name was supplied, cannot determine if cert exists. This should never happen")
+			}
+			tx = db.Find(&c, "name = ?", name)
 
+		} else {
+			tx = db.Find(&c, "id = ?", id)
+		}
 		if tx.Error != nil {
 			err = tx.Error
 		}
+
 	}
 	return len(c) > 0, err
 }

@@ -68,9 +68,14 @@ func GetCertList() (map[int]string, error) {
 
 }
 func VerifyCertificate(cert models.CertUploadForm) bool {
-	x, err := datalayer.CertExists(cert.Name)
+	idx := cert.ID != nil
+	cx, err := datalayer.CertExists(cert.Name)
+	//if id is sent, we want to update only if a cert with that id exists.
 	if err == nil {
-		if x {
+		if cx && !idx {
+			return false
+		}
+		if !cx && idx {
 			return false
 		}
 	}

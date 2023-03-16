@@ -29,12 +29,17 @@ func sendAlert(system *models.Systemstatus, message string) {
 	}
 }
 
+var dlSaveSystemStatus = datalayer.SaveSystemStatus
+
 func sendOKStatus(system *models.Systemstatus) {
 	body := fmt.Sprintf("System %v status OK", system.Name)
 	sendStatus(system, body)
 	system.AlertHasBeenSent = false
-	datalayer.SaveSystemStatus(system)
+	dlSaveSystemStatus(system)
 }
+
+// allow mocking
+var UpdateSystem = datalayer.UpdateSystem
 
 func sendStatus(system *models.Systemstatus, body string) error {
 	contentType := getContentType(system.AlertBody)
@@ -44,15 +49,20 @@ func sendStatus(system *models.Systemstatus, body string) error {
 	}
 
 	if system.AlertEmail != "" {
-		err = sendEmail(system, body)
+		err = sendmail(system, body)
 	}
 	if err == nil {
 		system.AlertHasBeenSent = true
-		datalayer.UpdateSystem(system)
+		err = UpdateSystem(system)
+		if err != nil {
+			fmt.Printf("failed to update system, %v", err)
+		}
 	}
 
 	return err
 }
+
+var sendmail = sendEmail
 
 func sendEmail(system *models.Systemstatus, body string) error {
 	conf := config.GetInstance()

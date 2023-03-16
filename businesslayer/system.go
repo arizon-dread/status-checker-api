@@ -15,10 +15,13 @@ import (
 	"github.com/arizon-dread/status-checker-api/models"
 )
 
+// make it mockable
+var dlGetSystemStatus = datalayer.GetSystemStatus
+
 func GetSystemStatus(id int) (models.Systemstatus, error) {
 	var err error = nil
 	var message string = ""
-	system, err := datalayer.GetSystemStatus(id)
+	system, err := dlGetSystemStatus(id)
 	var client *http.Client
 	var transport *http.Transport
 
@@ -58,7 +61,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			system.Status = "OK"
 
 		}
-		createdSys, err := datalayer.SaveSystemStatus(&system)
+		createdSys, err := dlSaveSystemStatus(&system)
 		if err != nil {
 			fmt.Printf("Couldn't persist status to db, %v\n", err)
 		}
@@ -132,8 +135,8 @@ func checkCert(system *models.Systemstatus) string {
 		currentDate := time.Now()
 
 		if err == nil {
-			alertDays := currentDate.AddDate(0, 0, -system.CertExpirationDays)
-			if expirationDate.After(alertDays) {
+			alertDays := currentDate.AddDate(0, 0, system.CertExpirationDays)
+			if !expirationDate.After(alertDays) {
 				message += fmt.Sprintf("Certificate will expire in less than %d days, expiration datetime: %v\n", system.CertExpirationDays, expirationDate)
 			} else {
 				system.CertStatus = "OK"

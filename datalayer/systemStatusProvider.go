@@ -6,6 +6,10 @@ import (
 	"github.com/arizon-dread/status-checker-api/models"
 )
 
+type system interface {
+	UpdateSystem(models.Systemstatus) error
+}
+
 func GetAllSystemStatuses() ([]models.Systemstatus, error) {
 	var err error = nil
 

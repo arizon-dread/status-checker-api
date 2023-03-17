@@ -1,6 +1,9 @@
 package businesslayer
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -82,7 +85,7 @@ func TestGetSystemStatus(t *testing.T) {
 				CertExpirationDays: 20,
 				Message:            "Message",
 				ResponseMatch:      "<html>",
-				AlertBody:          "google is down",
+				AlertBody:          "dummyjson is down",
 				AlertUrl:           "",
 				AlertEmail:         "hi@hello.com",
 				AlertHasBeenSent:   false,
@@ -97,6 +100,8 @@ func TestGetSystemStatus(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			dlgss := &fakeDLGetSystemStatus{id: 1}
 			dlGetSystemStatus = dlgss.setup
+			fblhr := &fakeBLHandleResponse{msg: ""}
+			blHandleResponse = fblhr.setup
 			got, err := GetSystemStatus(tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSystemStatus() error = %v, wantErr %v", err, tt.wantErr)
@@ -104,6 +109,43 @@ func TestGetSystemStatus(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSystemStatus() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+type fakeBLHandleResponse struct {
+	msg string
+}
+
+func (fblhr *fakeBLHandleResponse) setup(system *models.Systemstatus, resp *http.Response, err error) string {
+	msg := ""
+	return msg
+}
+func Test_handleResponse(t *testing.T) {
+	type args struct {
+		system *models.Systemstatus
+		resp   *http.Response
+		err    error
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "happypath",
+			args: args{&models.Systemstatus{}, &http.Response{
+				StatusCode: 200,
+				Body:       io.NopCloser(bytes.NewBufferString("OK"))},
+				fmt.Errorf("")},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleResponse(tt.args.system, tt.args.resp, tt.args.err); got != tt.want {
+				t.Errorf("handleResponse() = %v, want %v", got, tt.want)
 			}
 		})
 	}

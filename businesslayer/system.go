@@ -48,12 +48,12 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			contentType := getContentType(system.CallBody)
 
 			resp, err := client.Post(system.CallUrl, contentType, strings.NewReader(system.CallBody))
-			message += handleResponse(&system, resp, err)
+			message += blHandleResponse(&system, resp, err)
 
 		} else {
 			//GET
 			resp, err := client.Get(system.CallUrl)
-			message += handleResponse(&system, resp, err)
+			message += blHandleResponse(&system, resp, err)
 		}
 		if message != "" {
 			sendAlert(&system, message)
@@ -149,6 +149,8 @@ func checkCert(system *models.Systemstatus) string {
 	}
 	return message
 }
+
+var blHandleResponse = handleResponse
 
 func handleResponse(system *models.Systemstatus, resp *http.Response, err error) string {
 	var message string = ""

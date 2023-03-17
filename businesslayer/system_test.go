@@ -54,11 +54,11 @@ func (fgss *fakeDLGetSystemStatus) setup(id int) (models.Systemstatus, error) {
 }
 
 type fakeBLHandleResponse struct {
-	msg string
+	msg error
 }
 
-func (fblhr *fakeBLHandleResponse) setup(system *models.Systemstatus, resp *http.Response, err error) string {
-	msg := ""
+func (fblhr *fakeBLHandleResponse) setup(system *models.Systemstatus, resp *http.Response, err error) error {
+	var msg error = nil
 	return msg
 }
 
@@ -128,7 +128,7 @@ func TestGetSystemStatus(t *testing.T) {
 			dlgss.s = &models.Systemstatus{AlertUrl: tt.server.URL}
 			dlGetSystemStatus = dlgss.setup
 
-			fblhr := &fakeBLHandleResponse{msg: ""}
+			fblhr := &fakeBLHandleResponse{msg: nil}
 			blHandleResponse = fblhr.setup
 
 			fdlss := &fakeDLSaveSystemStatus{&tt.want}
@@ -156,7 +156,7 @@ func Test_handleResponse(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want string
+		want error
 	}{
 		{
 			name: "happypath",
@@ -164,7 +164,7 @@ func Test_handleResponse(t *testing.T) {
 				StatusCode: 200,
 				Body:       io.NopCloser(bytes.NewBufferString("OK"))},
 				nil},
-			want: "",
+			want: nil,
 		},
 	}
 	for _, tt := range tests {

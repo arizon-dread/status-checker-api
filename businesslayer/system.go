@@ -20,7 +20,6 @@ var dlGetSystemStatus = datalayer.GetSystemStatus
 
 func GetSystemStatus(id int) (models.Systemstatus, error) {
 	var err error = nil
-	var message string = ""
 	system, err := dlGetSystemStatus(id)
 	seconds := 30
 	client := &http.Client{Timeout: time.Duration(seconds) * time.Second}
@@ -32,35 +31,37 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	} else {
 		if strings.Contains(system.CallUrl, "https") {
 			//cert-check
-			message += checkCert(&system)
+			certErr := checkCert(&system)
 			//use clientcert in call
-			if system.ClientCertID != nil {
-				tlsConfig, err := getTlsConfigWithClientCert(system)
-				if err == nil {
-					transport.TLSClientConfig = tlsConfig
-					client.Transport = transport
-				} else {
-					fmt.Printf("Failed creating tls client config, %v\n", err)
+			if certErr == nil {
+				if system.ClientCertID != nil {
+					tlsConfig, tlsErr := getTlsConfigWithClientCert(system)
+					if tlsErr == nil {
+						transport.TLSClientConfig = tlsConfig
+						client.Transport = transport
+					} else {
+						fmt.Printf("Failed creating tls client config, %v\n", tlsErr)
+					}
 				}
 			}
 		}
+		var callErr error = nil
 		if system.CallBody != "" {
 			//POST
 			contentType := getContentType(system.CallBody)
 
 			resp, err := client.Post(system.CallUrl, contentType, strings.NewReader(system.CallBody))
-			message += blHandleResponse(&system, resp, err)
+			callErr = blHandleResponse(&system, resp, err)
 
 		} else {
 			//GET
 			resp, err := client.Get(system.CallUrl)
-			message += blHandleResponse(&system, resp, err)
+			callErr = blHandleResponse(&system, resp, err)
 		}
-		if message != "" {
-			sendAlert(&system, message)
+		if callErr == nil {
+			sendAlert(&system, fmt.Sprintf("%v", callErr))
 		} else {
 			system.Status = "OK"
-
 		}
 		createdSys, err := dlSaveSystemStatus(&system)
 		if err != nil {
@@ -73,31 +74,38 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 }
 
 func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error) {
+	tlsConfig := &tls.Config{}
+	var ccDecryptErr error
+	var parseErr error
 	clientCert, getCCErr := getClientCert(*system.ClientCertID)
+
 	if getCCErr != nil {
 		fmt.Printf("Could not load certificates from db, %v\n", getCCErr)
-	}
-	//encode private key as pem structure
-	cert, ccDecryptErr := decryptClientCert(clientCert)
-	if ccDecryptErr != nil {
-		fmt.Printf("Error decrypting cert, %v", ccDecryptErr)
+	} else {
+		// encode private key as pem structure
+		cert, ccDecryptErr := decryptClientCert(clientCert)
+		if ccDecryptErr != nil {
+			fmt.Printf("Error decrypting cert, %v", ccDecryptErr)
+		} else {
+			url, parseErr := url.Parse(system.CallUrl)
+			if parseErr != nil {
+				fmt.Printf("Could not parse URL to string, %v\n", parseErr)
+			} else {
+				serverCerts := getCertFromUrl(*url)
+				caCertPool := x509.NewCertPool()
+				for _, sCert := range serverCerts {
+					caCertPool.AddCert(sCert)
+				}
+
+				tlsConfig = &tls.Config{
+					Certificates: []tls.Certificate{cert},
+					RootCAs:      caCertPool,
+				}
+			}
+		}
 	}
 
-	url, parseErr := url.Parse(system.CallUrl)
-	if parseErr != nil {
-		fmt.Printf("Could not parse URL to string, %v\n", parseErr)
-	}
-	serverCerts := getCertFromUrl(*url)
-	caCertPool := x509.NewCertPool()
-	for _, sCert := range serverCerts {
-		caCertPool.AddCert(sCert)
-	}
-
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-	}
-	err := fmt.Errorf("%w + %w + %w", getCCErr, ccDecryptErr, parseErr)
+	err := errors.Join(getCCErr, ccDecryptErr, parseErr)
 	return tlsConfig, err
 
 }
@@ -127,43 +135,41 @@ func SaveSystemStatus(system models.Systemstatus) (models.Systemstatus, error) {
 	return system, err
 }
 
-func checkCert(system *models.Systemstatus) string {
-	var message string = ""
-	url, err := url.Parse(system.CallUrl)
-	if err == nil {
+func checkCert(system *models.Systemstatus) error {
+	var checkErr error
+	url, parseErr := url.Parse(system.CallUrl)
+	if parseErr == nil {
 		certs := getCertFromUrl(*url)
 		expirationDate := certs[0].NotAfter
 		currentDate := time.Now()
 
-		if err == nil {
-			alertDays := currentDate.AddDate(0, 0, system.CertExpirationDays)
-			if !expirationDate.After(alertDays) {
-				message += fmt.Sprintf("Certificate will expire in less than %d days, expiration datetime: %v\n", system.CertExpirationDays, expirationDate)
-			} else {
-				system.CertStatus = "OK"
-			}
+		alertDays := currentDate.AddDate(0, 0, system.CertExpirationDays)
+		if !expirationDate.After(alertDays) {
+			checkErr = fmt.Errorf("Certificate will expire in less than %d days, expiration datetime: %v\n", system.CertExpirationDays, expirationDate)
 		} else {
-			fmt.Printf("CertWarningDays from config could not be converted to int, %v", system.CertExpirationDays)
+			system.CertStatus = "OK"
 		}
-	} else {
-		fmt.Printf("url could not be parsed, %v\n", err)
 	}
-	return message
+	err := errors.Join(checkErr, parseErr)
+
+	return err
 }
 
+// var to make it mockable.
+// handleResponse: Checks error code, reads body, checks if it matches the ResponseMatch prop of the models.SystemStatus struct.
+// returns: a string of anything that went wrong.
 var blHandleResponse = handleResponse
 
-func handleResponse(system *models.Systemstatus, resp *http.Response, err error) string {
-	var message string = ""
+func handleResponse(system *models.Systemstatus, resp *http.Response, err error) error {
+	var respErr, readErr, matchErr error
 	if err != nil || resp.StatusCode > 399 {
-		message += fmt.Sprintf("Failed posting to endpoint: %v, error was: %v\n", system.CallUrl, err)
-		fmt.Print(message)
+		respErr = fmt.Errorf("Failed posting to endpoint: %v\n", system.CallUrl)
+		fmt.Print(respErr)
 	} else {
-		body, err := io.ReadAll(resp.Body)
+		body, readErr := io.ReadAll(resp.Body)
 
-		if err != nil {
-			message += fmt.Sprintf("Failed to read response from endpoint: %v, response was: %v\n", system.CallUrl, err)
-			fmt.Print(message)
+		if readErr != nil {
+			fmt.Print(readErr)
 		} else {
 			if strings.Contains(string(body[:]), system.ResponseMatch) {
 				system.CallStatus = "OK"
@@ -172,9 +178,9 @@ func handleResponse(system *models.Systemstatus, resp *http.Response, err error)
 					sendOKStatus(system)
 				}
 			} else {
-				message += "Response didn't match expected content \n"
+				matchErr = fmt.Errorf("Response didn't match expected content \n")
 			}
 		}
 	}
-	return message
+	return errors.Join(respErr, readErr, matchErr)
 }

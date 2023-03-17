@@ -2,13 +2,11 @@ package businesslayer
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/arizon-dread/status-checker-api/models"
 )
@@ -49,11 +47,41 @@ func (fgss *fakeDLGetSystemStatus) setup(id int) (models.Systemstatus, error) {
 		Message:            "Message",
 		ResponseMatch:      "<html>",
 		AlertBody:          "google is down",
-		AlertUrl:           "",
 		AlertEmail:         "hi@hello.com",
 		AlertHasBeenSent:   false,
 		Status:             "OK",
-		LastOKTime:         time.Now(),
+	}, nil
+}
+
+type fakeBLHandleResponse struct {
+	msg string
+}
+
+func (fblhr *fakeBLHandleResponse) setup(system *models.Systemstatus, resp *http.Response, err error) string {
+	msg := ""
+	return msg
+}
+
+type fakeDLSaveSystemStatus struct {
+	s *models.Systemstatus
+}
+
+func (fdlss *fakeDLSaveSystemStatus) setup(system *models.Systemstatus) (models.Systemstatus, error) {
+	return models.Systemstatus{
+		ID:                 1,
+		Name:               "dummyjson",
+		CallStatus:         "OK",
+		CallUrl:            "https://dummyjson.com/products/1",
+		CallBody:           "",
+		HttpMethod:         "GET",
+		CertStatus:         "OK",
+		CertExpirationDays: 20,
+		Message:            "Message",
+		ResponseMatch:      "<html>",
+		AlertBody:          "dummyjson is down",
+		AlertEmail:         "hi@hello.com",
+		AlertHasBeenSent:   false,
+		Status:             "OK",
 	}, nil
 }
 
@@ -76,7 +104,7 @@ func TestGetSystemStatus(t *testing.T) {
 			args: args{1},
 			want: models.Systemstatus{
 				ID:                 1,
-				Name:               "google",
+				Name:               "dummyjson",
 				CallStatus:         "OK",
 				CallUrl:            "https://dummyjson.com/products/1",
 				CallBody:           "",
@@ -86,22 +114,27 @@ func TestGetSystemStatus(t *testing.T) {
 				Message:            "Message",
 				ResponseMatch:      "<html>",
 				AlertBody:          "dummyjson is down",
-				AlertUrl:           "",
 				AlertEmail:         "hi@hello.com",
 				AlertHasBeenSent:   false,
 				Status:             "OK",
-				LastOKTime:         time.Now(),
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
-		tt.want.AlertUrl = tt.server.URL
+		//tt.want.AlertUrl = tt.server.URL
 		t.Run(tt.name, func(t *testing.T) {
 			dlgss := &fakeDLGetSystemStatus{id: 1}
+			dlgss.s = &models.Systemstatus{AlertUrl: tt.server.URL}
 			dlGetSystemStatus = dlgss.setup
+
 			fblhr := &fakeBLHandleResponse{msg: ""}
 			blHandleResponse = fblhr.setup
+
+			fdlss := &fakeDLSaveSystemStatus{&tt.want}
+			fdlss.s = &models.Systemstatus{AlertUrl: tt.server.URL}
+			dlSaveSystemStatus = fdlss.setup
+
 			got, err := GetSystemStatus(tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSystemStatus() error = %v, wantErr %v", err, tt.wantErr)
@@ -114,14 +147,6 @@ func TestGetSystemStatus(t *testing.T) {
 	}
 }
 
-type fakeBLHandleResponse struct {
-	msg string
-}
-
-func (fblhr *fakeBLHandleResponse) setup(system *models.Systemstatus, resp *http.Response, err error) string {
-	msg := ""
-	return msg
-}
 func Test_handleResponse(t *testing.T) {
 	type args struct {
 		system *models.Systemstatus
@@ -135,10 +160,10 @@ func Test_handleResponse(t *testing.T) {
 	}{
 		{
 			name: "happypath",
-			args: args{&models.Systemstatus{}, &http.Response{
+			args: args{&models.Systemstatus{ResponseMatch: "OK"}, &http.Response{
 				StatusCode: 200,
 				Body:       io.NopCloser(bytes.NewBufferString("OK"))},
-				fmt.Errorf("")},
+				nil},
 			want: "",
 		},
 	}

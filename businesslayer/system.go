@@ -22,7 +22,8 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	var err error = nil
 	var message string = ""
 	system, err := dlGetSystemStatus(id)
-	var client *http.Client
+	seconds := 30
+	client := &http.Client{Timeout: time.Duration(seconds) * time.Second}
 	var transport *http.Transport
 
 	if err != nil {

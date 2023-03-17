@@ -35,8 +35,6 @@ type throwaway struct {
 }
 
 func TestSendStatus(t *testing.T) {
-	//{"name":"status-checker-api", "callUrl": "http://localhost:8080/healthz", "httpMethod": "GET", "ResponseMatch": "Healthy",
-	//"alertBody": "shit went south", "alertUrl": "http://dev.null.com", "alertEmail": "erik.j.svensson@gmail.com"}'
 
 	tcs := []Test{
 		{

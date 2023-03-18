@@ -58,7 +58,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 			resp, err := client.Get(system.CallUrl)
 			callErr = blHandleResponse(&system, resp, err)
 		}
-		if callErr == nil {
+		if callErr != nil {
 			sendAlert(&system, fmt.Sprintf("%v", callErr))
 		} else {
 			system.Status = "OK"

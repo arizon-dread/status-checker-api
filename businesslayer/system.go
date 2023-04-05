@@ -70,7 +70,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 		return createdSys, err
 	}
 
-	return system, errors.New("not found")
+	return system, errors.New("NotFound")
 }
 
 func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error) {

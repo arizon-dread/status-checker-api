@@ -100,9 +100,7 @@ func UploadP12(c *gin.Context) {
 		if valid {
 			_, saveErr := businesslayer.SaveCertificate(cc)
 			if saveErr == nil {
-				if bindErr == nil && valid && saveErr == nil {
-					c.JSON(http.StatusCreated, cc.Name)
-				}
+				c.JSON(http.StatusCreated, cc.Name)
 			} else {
 				fmt.Printf("error saving certificate, %v\n", saveErr)
 				c.AbortWithError(http.StatusInternalServerError, saveErr)

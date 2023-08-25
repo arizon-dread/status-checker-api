@@ -4,7 +4,7 @@ postgres:
   port: 5432
   user: status
   database: status
-  password: # this should be supplied in via env. These empty settings still needs to be here to make viper read these env vars.
+  password: # this should be supplied via env. These empty settings still needs to be here to make viper read these env vars.
 alertsmtp:
   server: smtp.gmail.com
   port: 587

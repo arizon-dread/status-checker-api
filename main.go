@@ -7,19 +7,30 @@ import (
 	"github.com/arizon-dread/status-checker-api/api"
 	"github.com/arizon-dread/status-checker-api/config"
 	"github.com/arizon-dread/status-checker-api/datalayer"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/slices"
 )
 
 func main() {
 	readConfig()
-
+	cfg := config.GetInstance()
 	err := datalayer.PerformMigrations()
 	if err != nil {
 		fmt.Printf("Migrations failed: %v\n", err)
 		panic("migrations failed")
 	}
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     cfg.General.Cors.Origins,
+		AllowHeaders:     cfg.General.Cors.Headers,
+		AllowMethods:     cfg.General.Cors.Methods,
+		AllowCredentials: cfg.General.Cors.AllowCredentials,
+		AllowOriginFunc: func(origin string) bool {
+			return slices.Contains(cfg.General.Cors.Origins, origin)
+		},
+	}))
 	router.GET("/healthz", api.Health)
 	router.GET("/systemstatus", api.Systemstatuses)
 	router.GET("/systemstatus/:id", api.Systemstatus)

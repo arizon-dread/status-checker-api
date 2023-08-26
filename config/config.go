@@ -27,6 +27,7 @@ type Config struct {
 }
 type General struct {
 	EncryptionKey string
+	Cors          Cors
 }
 
 type Postgres struct {
@@ -42,6 +43,12 @@ type AlertSMTP struct {
 	Port     int
 	User     string
 	Password string
+}
+type Cors struct {
+	Origins          []string
+	Methods          []string
+	Headers          []string
+	AllowCredentials bool
 }
 
 // type General struct {

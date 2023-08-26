@@ -1,6 +1,6 @@
 # Status Checker API
 ## Project goal and purpose
-The project's main goal is to make it possible to monitor REST API's/applications uptime by self-hosting an application (Status Checker API) that can call the API's with a custom request and validate the response according to a pattern, to determine if the application is healthy and up and running. It can then send notifications to a web hook and/or an email address if the monitored application is deemed unhealthy/unresponsive or if it replies with a non-matching response. Status Checker API supports mutual TLS for the monitored applications. 
+The project's main goal is to make it possible to monitor API's/applications uptime by self-hosting an application (Status Checker API) that can call the API/application with a custom request and validate the response according to a pattern, to determine if the application is healthy and up and running. It can then send notifications to a web hook and/or an email address if the monitored application is deemed unhealthy/unresponsive or if it replies with a non-matching response. Status Checker API supports mutual TLS for the monitored applications. 
 ## Endpoints
 ### GET /healthz
 * Returns 200 healthy if the app is up.

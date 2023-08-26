@@ -12,3 +12,8 @@ alertsmtp:
   password: #this should be supplied via env.
 general:
   encryptionKey: #this should be supplied via env.
+  cors:
+    origins: ['http://localhost:4200']
+    methods: ['GET', 'POST', 'DELETE']
+    headers: ['Origin', 'Content-Type']
+    allowCredentials: true

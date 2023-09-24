@@ -46,7 +46,7 @@ func readConfig() {
 
 	cfg := config.GetInstance()
 
-	viper.SetConfigFile("./config.yaml")
+	viper.SetConfigFile("./confFile/config.yaml")
 	viper.SetConfigType("yaml")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()

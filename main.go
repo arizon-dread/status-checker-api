@@ -63,7 +63,7 @@ func readConfig() {
 	if err != nil {
 		breakOnNoConfig(err)
 	}
-
+	fmt.Printf("port: %v password: %v", cfg.Postgres.Port, cfg.Postgres.Password)
 }
 
 func breakOnNoConfig(err error) {

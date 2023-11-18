@@ -23,7 +23,7 @@ func GetSystemStatus(id int) (models.Systemstatus, error) {
 	system, err := dlGetSystemStatus(id)
 	seconds := 30
 	client := &http.Client{Timeout: time.Duration(seconds) * time.Second}
-	var transport *http.Transport
+	var transport *http.Transport = http.DefaultTransport.(*http.Transport)
 
 	if err != nil {
 		fmt.Printf("DataLayer returned error: %v when trying to get system from database\n", err)
@@ -100,6 +100,13 @@ func getTlsConfigWithClientCert(system models.Systemstatus) (*tls.Config, error)
 				tlsConfig = &tls.Config{
 					Certificates: []tls.Certificate{cert},
 					RootCAs:      caCertPool,
+					CipherSuites: []uint16{
+						tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+						tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+					},
+					PreferServerCipherSuites: true,
+					MinVersion:               tls.VersionTLS12,
+					MaxVersion:               tls.VersionTLS12,
 				}
 			}
 		}

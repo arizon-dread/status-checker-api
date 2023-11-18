@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -105,7 +106,7 @@ func getClientCert(id int) (models.ClientCert, error) {
 	if decryptErr != nil {
 		fmt.Printf("Failed decrypting password, %v", decryptErr)
 	}
-	err := fmt.Errorf("%w + %w", dlErr, decryptErr)
+	err := errors.Join(dlErr, decryptErr)
 	clientCert.Password = pw
 	return clientCert, err
 }
@@ -145,7 +146,7 @@ func encryptPassword(clearTxt string) (string, error) {
 }
 
 func decryptPassword(encPwd string) (string, error) {
-	cipher, b64Err := base64.StdEncoding.DecodeString(encPwd)
+	cipher, b64Err := base64.RawStdEncoding.DecodeString(encPwd)
 	if b64Err != nil {
 		fmt.Printf("error decoding base64 string")
 	}

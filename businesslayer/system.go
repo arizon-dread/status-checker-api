@@ -152,7 +152,7 @@ func checkCert(system *models.Systemstatus) error {
 
 		alertDays := currentDate.AddDate(0, 0, system.CertExpirationDays)
 		if !expirationDate.After(alertDays) {
-			checkErr = fmt.Errorf("Certificate will expire in less than %d days, expiration datetime: %v\n", system.CertExpirationDays, expirationDate)
+			checkErr = fmt.Errorf("certificate will expire in less than %d days, expiration datetime: %v", system.CertExpirationDays, expirationDate)
 		} else {
 			system.CertStatus = "OK"
 		}
@@ -170,7 +170,7 @@ var blHandleResponse = handleResponse
 func handleResponse(system *models.Systemstatus, resp *http.Response, err error) error {
 	var respErr, readErr, matchErr error
 	if err != nil || resp.StatusCode > 399 {
-		respErr = fmt.Errorf("Failed posting to endpoint: %v\n", system.CallUrl)
+		respErr = fmt.Errorf("failed posting to endpoint: %v", system.CallUrl)
 		fmt.Print(respErr)
 	} else {
 		body, readErr := io.ReadAll(resp.Body)
@@ -185,7 +185,7 @@ func handleResponse(system *models.Systemstatus, resp *http.Response, err error)
 					sendOKStatus(system)
 				}
 			} else {
-				matchErr = fmt.Errorf("Response didn't match expected content \n")
+				matchErr = fmt.Errorf("response didn't match expected content")
 			}
 		}
 	}

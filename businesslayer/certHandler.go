@@ -54,18 +54,14 @@ func SaveCertificate(cf models.CertUploadForm) (int, error) {
 	return datalayer.SaveClientCert(&c)
 }
 
-func GetCertList() (map[int]string, error) {
+func GetCertList() ([]models.ClientCert, error) {
 	certs, err := datalayer.GetCertList()
-	m := make(map[int]string)
-	if err != nil {
-		fmt.Printf("Could not get certlist from database, %v", err)
-		return m, err
-	}
+
 	for _, c := range certs {
-		m[c.ID] = c.Name
+		c.Password = ""
 	}
 
-	return m, err
+	return certs, err
 
 }
 func VerifyCertificate(cert models.CertUploadForm) bool {

@@ -56,9 +56,12 @@ func SaveCertificate(cf models.CertUploadForm) (int, error) {
 
 func GetCertList() ([]models.ClientCert, error) {
 	certs, err := datalayer.GetCertList()
+	if err != nil {
+		return nil, err
+	}
 
-	for _, c := range certs {
-		c.Password = ""
+	for i := range certs {
+		certs[i].Password = ""
 	}
 
 	return certs, err

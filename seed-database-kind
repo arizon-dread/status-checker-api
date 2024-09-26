@@ -1,5 +1,5 @@
 #!/bin/bash
 curl http://api.localhost/api/systemstatus -d '{"name":"status-checker-api/", "callUrl": "http://api.localhost/api/healthz", "httpMethod": "GET", "ResponseMatch": "Healthy", "alertBody": "shit went south", "alertUrl": "https://hooks.slack.com/services/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", "alertEmail": "erik.j.svensson@gmail.com"}'
 curl http://api.localhost/api/systemstatus -d '{"name":"google", "callUrl": "https://google.com", "httpMethod": "GET", "ResponseMatch": "google.kEI", "alertBody": "Google went down", "alertUrl": "https://hooks.slack.com/services/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", "alertEmail": "erik.j.svensson@gmail.com", "certExpirationDays":10, "clientCertID": 1}'
-curl -XPOST http:/localhost:8080/clientcert -H 'Content-Type: multipart/form-data' -F 'file=@testcert.p12' -F 'name=testcert.p12' -F 'password=default' -v
+curl -XPOST http://localhost/api/clientcert -H 'Content-Type: multipart/form-data' -F 'file=@testcert.p12' -F 'name=testcert.p12' -F 'password=default' -v
 exit 0

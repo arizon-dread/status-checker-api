@@ -37,6 +37,7 @@ func Systemstatus(c *gin.Context) {
 			fmt.Printf("err: %v", err)
 			if err.Error() == "NotFound" {
 				c.AbortWithStatus(http.StatusNotFound)
+				return
 			}
 			c.AbortWithStatus(http.StatusInternalServerError)
 		}
